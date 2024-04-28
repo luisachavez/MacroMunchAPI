@@ -1,6 +1,8 @@
+require('dotenv').config();
 
 const express = require('express')
 const pg = require("pg");
+
 
 
 const app = express()
@@ -10,11 +12,11 @@ const PORT = process.env.PORT || 5000;
 app.use(express.json());
 
 const client = new pg.Client({
-    user: "postgres",
-    host: "localhost",
-    database: "FastFoodNutrition",
-    password: "Believe112",
-    port: "5555"
+    user: process.env.user,
+    host: process.env.host,
+    database: process.env.database,
+    password: process.env.password,
+    port: process.env.pgPort
   })
 
 
