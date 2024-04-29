@@ -1,26 +1,51 @@
 require('dotenv').config();
 
 const express = require('express')
-const pg = require("pg");
-
+// const pg = require("pg");
+const { Client } = require("pg");
+require('https').globalAgent.options.ca = require('ssl-root-cas').create();
 
 
 const app = express()
 const PORT = process.env.PORT || 5000;
-
+ 
 
 app.use(express.json());
 
-const client = new pg.Client({
-    user: process.env.user,
-    host: process.env.host,
-    database: process.env.database,
-    password: process.env.password,
-    port: process.env.pgPort
-  })
+const client = new Client({
+    connectionString: `postgres://${process.env.DB_USER}:${process.env.DB_PASSWORD}` +
+                      `@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`,
+    ssl: {
+        rejectUnauthorized: false // Ensure you are validating the server certificate
+    }
+});
 
 
-  client.connect();
+// const client = new pg.Client({
+//     user: process.env.user,
+//     host: process.env.host,
+//     database: process.env.database,
+//     password: process.env.password,
+//     port: process.env.pgPort
+//   })
+// const client = new pg.Client({
+//     user: "postgres",
+//     host: "lc-fastfood-nutrition.ctkkwmoeorg3.us-west-2.rds.amazonaws.com",
+//     database: "fastfoodNutrition",
+//     password: "Believe112",
+//     port: 5432,
+//     ssl: {
+//         rejectUnauthorized: false // For development only, set to true in production
+//     }
+// })
+
+
+
+
+
+
+client.connect();
+
 
 app.get('/', (req, res) => {
     res.send('Welcome to FastFood Nutrition API')
