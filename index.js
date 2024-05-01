@@ -506,21 +506,21 @@ app.post('/specific/proteinlvl', async (req, res) => {
         console.log("values", values)
 
         const query = {
-            text: `SELECT restaurant, menu_item, calories, protein, total_carbohydrates, total_fat
+            text: `SELECT restaurant, menu_item, calories, protein, total_carbohydrate, total_fat
              FROM (
-                    SELECT restaurant, menu_item, calories, protein, total_carbohydrates, total_fat FROM arbys_menu
+                    SELECT restaurant, menu_item, calories, protein, total_carbohydrate, total_fat FROM arbys_menu
                     UNION ALL
-                    SELECT restaurant, menu_item, calories, protein, total_carbohydrates, total_fat FROM burgerking_menu
+                    SELECT restaurant, menu_item, calories, protein, total_carbohydrate, total_fat FROM burgerking_menu
                     UNION ALL
-                    SELECT restaurant, menu_item, calories, protein, total_carbohydrates, total_fat FROM carlsjr_menu
+                    SELECT restaurant, menu_item, calories, protein, total_carbohydrate, total_fat FROM carlsjr_menu
                     UNION ALL
-                    SELECT restaurant, menu_item, calories, protein, total_carbohydrates, total_fat FROM chickfila_menu
+                    SELECT restaurant, menu_item, calories, protein, total_carbohydrate, total_fat FROM chickfila_menu
                     UNION ALL
-                    SELECT restaurant, menu_item, calories, protein, total_carbohydrates, total_fat FROM jackinthebox_menu
+                    SELECT restaurant, menu_item, calories, protein, total_carbohydrate, total_fat FROM jackinthebox_menu
                     UNION ALL
-                    SELECT restaurant, menu_item, calories, protein, total_carbohydrates, total_fat FROM subway_menu
+                    SELECT restaurant, menu_item, calories, protein, total_carbohydrate, total_fat FROM subway_menu
                     UNION ALL
-                    SELECT restaurant, menu_item, calories, protein, total_carbohydrates, total_fat FROM tacobell1_menu
+                    SELECT restaurant, menu_item, calories, protein, total_carbohydrate, total_fat FROM tacobell1_menu
                   ) AS all_menus
                 WHERE protein BETWEEN $1 - 2 AND $1 + 2
                 ${restaurantFilter}`,
@@ -531,7 +531,7 @@ app.post('/specific/proteinlvl', async (req, res) => {
 
         const restaurantsData = {};
         result.rows.forEach(row => {
-            const { restaurant, menu_item, calories, protein, total_carbohydrates, total_fat } = row;
+            const { restaurant, menu_item, calories, protein, total_carbohydrate, total_fat } = row;
             if (!restaurantsData[restaurant]) {
                 restaurantsData[restaurant] = [];
             }
@@ -539,7 +539,7 @@ app.post('/specific/proteinlvl', async (req, res) => {
                 menuItem: menu_item,
                 calories: calories,
                 protein: protein,
-                totalCarbs: total_carbohydrates,
+                totalCarbs: total_carbohydrate,
                 totalFat: total_fat
             });
         });
