@@ -16,7 +16,7 @@ const client = new Client({
     connectionString: `postgres://${process.env.DB_USER}:${process.env.DB_PASSWORD}` +
                       `@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`,
     ssl: {
-        rejectUnauthorized: true // Ensure you are validating the server certificate
+        rejectUnauthorized: false // Ensure you are validating the server certificate
     }
 });
 
