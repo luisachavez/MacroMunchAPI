@@ -16,7 +16,7 @@ const client = new Client({
     connectionString: `postgres://${process.env.DB_USER}:${process.env.DB_PASSWORD}` +
                       `@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`,
     ssl: {
-        rejectUnauthorized: false // Ensure you are validating the server certificate
+        rejectUnauthorized: true // Ensure you are validating the server certificate
     }
 });
 
@@ -75,21 +75,21 @@ app.post('/specific/proteinMeal', async (req, res) => {
         console.log("values", values)
 
         const query = {
-            text: `SELECT restaurant, menu_item, calories, protein, protein_cal_meal
+            text: `SELECT restaurant, menu_item, calories, protein, protein_cal_meal, total_carbohydrates, total_fat
             FROM (
-              SELECT restaurant, menu_item, calories, protein, protein_cal_meal FROM arbys_menu
+              SELECT restaurant, menu_item, calories, protein, protein_cal_meal, total_carbohydrates, total_fat FROM arbys_menu
               UNION ALL
-              SELECT restaurant, menu_item, calories, protein, protein_cal_meal FROM burgerking_menu
+              SELECT restaurant, menu_item, calories, protein, protein_cal_meal, total_carbohydrates, total_fat FROM burgerking_menu
               UNION ALL
-              SELECT restaurant, menu_item, calories, protein, protein_cal_meal FROM carlsjr_menu
+              SELECT restaurant, menu_item, calories, protein, protein_cal_meal, total_carbohydrates, total_fat FROM carlsjr_menu
               UNION ALL
-              SELECT restaurant, menu_item, calories, protein, protein_cal_meal FROM chickfila_menu
+              SELECT restaurant, menu_item, calories, protein, protein_cal_meal, total_carbohydrates, total_fat FROM chickfila_menu
               UNION ALL
-              SELECT restaurant, menu_item, calories, protein, protein_cal_meal FROM jackinthebox_menu
+              SELECT restaurant, menu_item, calories, protein, protein_cal_meal, total_carbohydrates, total_fat FROM jackinthebox_menu
               UNION ALL
-              SELECT restaurant, menu_item, calories, protein, protein_cal_meal FROM subway_menu
+              SELECT restaurant, menu_item, calories, protein, protein_cal_meal, total_carbohydrates, total_fat FROM subway_menu
               UNION ALL
-              SELECT restaurant, menu_item, calories, protein, protein_cal_meal FROM tacobell1_menu
+              SELECT restaurant, menu_item, calories, protein, protein_cal_meal, total_carbohydrates, total_fat FROM tacobell1_menu
             ) AS all_menus
                 WHERE protein_cal_meal BETWEEN $1 - 0.03 AND $1 + 0.03
                 ${restaurantFilter}            `,
@@ -102,7 +102,7 @@ app.post('/specific/proteinMeal', async (req, res) => {
         
         const restaurants = {};
         result.rows.forEach(row => {
-            const { restaurant, menu_item, calories, protein, protein_cal_meal } = row;
+            const { restaurant, menu_item, calories, protein, protein_cal_meal, total_carbohydrates, total_fat } = row;
             if (!restaurants[restaurant]) {
                 restaurants[restaurant] = [];
             }
@@ -110,7 +110,9 @@ app.post('/specific/proteinMeal', async (req, res) => {
                 menuItem: menu_item,
                 calories: calories,
                 proteinGrams: protein,
-                proteinMealPercentage: protein_cal_meal * 100
+                proteinMealPercentage: protein_cal_meal * 100,
+                totalCarbs: total_carbohydrates,
+                totalFat: total_fat
             });
         });
 
@@ -143,21 +145,21 @@ app.post('/average/proteinDay', async (req, res) => {
         }
 
         const query = {
-            text: `SELECT restaurant, menu_item, calories, protein, protein_day
+            text: `SELECT restaurant, menu_item, calories, protein, protein_day, total_carbohydrates, total_fat
             FROM (
-              SELECT restaurant, menu_item, calories, protein, protein_day FROM arbys_menu
+              SELECT restaurant, menu_item, calories, protein, protein_day, total_carbohydrates, total_fat FROM arbys_menu
               UNION ALL
-              SELECT restaurant, menu_item, calories, protein, protein_day FROM burgerking_menu
+              SELECT restaurant, menu_item, calories, protein, protein_day, total_carbohydrates, total_fat FROM burgerking_menu
               UNION ALL
-              SELECT restaurant, menu_item, calories, protein, protein_day FROM carlsjr_menu
+              SELECT restaurant, menu_item, calories, protein, protein_day, total_carbohydrates, total_fat FROM carlsjr_menu
               UNION ALL
-              SELECT restaurant, menu_item, calories, protein, protein_day FROM chickfila_menu
+              SELECT restaurant, menu_item, calories, protein, protein_day, total_carbohydrates, total_fat FROM chickfila_menu
               UNION ALL
-              SELECT restaurant, menu_item, calories, protein, protein_day FROM jackinthebox_menu
+              SELECT restaurant, menu_item, calories, protein, protein_day, total_carbohydrates, total_fat FROM jackinthebox_menu
               UNION ALL
-              SELECT restaurant, menu_item, calories, protein, protein_day FROM subway_menu
+              SELECT restaurant, menu_item, calories, protein, protein_day, total_carbohydrates, total_fat FROM subway_menu
               UNION ALL
-              SELECT restaurant, menu_item, calories, protein, protein_day FROM tacobell1_menu
+              SELECT restaurant, menu_item, calories, protein, protein_day, total_carbohydrates, total_fat FROM tacobell1_menu
             ) AS all_menus
                 WHERE protein_day BETWEEN $1 - 0.005 AND $1 + 0.005 
                 ${restaurantFilter}          `,
@@ -170,7 +172,7 @@ app.post('/average/proteinDay', async (req, res) => {
        
         const restaurants = {};
         result.rows.forEach(row => {
-            const { restaurant, menu_item, calories, protein, protein_day } = row;
+            const { restaurant, menu_item, calories, protein, protein_day, total_carbohydrates, total_fat } = row;
             if (!restaurants[restaurant]) {
                 restaurants[restaurant] = [];
             }
@@ -178,7 +180,9 @@ app.post('/average/proteinDay', async (req, res) => {
                 menuItem: menu_item,
                 calories: calories,
                 proteinGrams: protein,
-                proteinDayPercentage: parseFloat((protein_day * 100).toFixed(2))
+                proteinDayPercentage: parseFloat((protein_day * 100).toFixed(2)),
+                totalCarbs: total_carbohydrates,
+                totalFat: total_fat
             });
         });
 
@@ -216,21 +220,21 @@ app.post('/customized/proteinDay', async (req, res) => {
         const maxProtein = Math.ceil(proteinCalories / 4 + (0.01 * caloriesDay / 4));
 
         const query = {
-            text: `SELECT restaurant, menu_item, calories, protein
+            text: `SELECT restaurant, menu_item, calories, protein, total_carbohydrates, total_fat
             FROM (
-              SELECT restaurant, menu_item, calories, protein FROM arbys_menu
+              SELECT restaurant, menu_item, calories, protein, total_carbohydrates, total_fat FROM arbys_menu
               UNION ALL
-              SELECT restaurant, menu_item, calories, protein FROM burgerking_menu
+              SELECT restaurant, menu_item, calories, protein, total_carbohydrates, total_fat FROM burgerking_menu
               UNION ALL
-              SELECT restaurant, menu_item, calories, protein FROM carlsjr_menu
+              SELECT restaurant, menu_item, calories, protein, total_carbohydrates, total_fat FROM carlsjr_menu
               UNION ALL
-              SELECT restaurant, menu_item, calories, protein FROM chickfila_menu
+              SELECT restaurant, menu_item, calories, protein, total_carbohydrates, total_fat FROM chickfila_menu
               UNION ALL
-              SELECT restaurant, menu_item, calories, protein FROM jackinthebox_menu
+              SELECT restaurant, menu_item, calories, protein, total_carbohydrates, total_fat FROM jackinthebox_menu
               UNION ALL
-              SELECT restaurant, menu_item, calories, protein FROM subway_menu
+              SELECT restaurant, menu_item, calories, protein, total_carbohydrates, total_fat FROM subway_menu
               UNION ALL
-              SELECT restaurant, menu_item, calories, protein FROM tacobell1_menu
+              SELECT restaurant, menu_item, calories, protein, total_carbohydrates, total_fat FROM tacobell1_menu
             ) AS all_menus
                  WHERE protein BETWEEN $1 AND $2
                  ${restaurantFilter}       `,
@@ -243,7 +247,7 @@ app.post('/customized/proteinDay', async (req, res) => {
        
         const restaurants = {};
         result.rows.forEach(row => {
-            const { restaurant, menu_item, calories, protein } = row;
+            const { restaurant, menu_item, calories, protein, total_carbohydrates, total_fat } = row;
             if (!restaurants[restaurant]) {
                 restaurants[restaurant] = [];
             }
@@ -251,7 +255,9 @@ app.post('/customized/proteinDay', async (req, res) => {
                 menuItem: menu_item,
                 calories: calories,
                 proteinGrams: protein,
-                proteinDailyPercentage: parseFloat(((protein * 4 / caloriesDay) * 100).toFixed(2))
+                proteinDailyPercentage: parseFloat(((protein * 4 / caloriesDay) * 100).toFixed(2)),
+                totalCarbs: total_carbohydrates,
+                totalFat: total_fat
             });
         });
 
@@ -283,21 +289,21 @@ app.post('/specific/carbMeal', async (req, res) => {
         }
 
         const query = {
-            text: `SELECT restaurant, menu_item, calories, total_carbohydrate, carb_cal_meal
+            text: `SELECT restaurant, menu_item, calories, total_carbohydrate, carb_cal_meal, protein, total_fat
             FROM (
-              SELECT restaurant, menu_item, calories, total_carbohydrate, carb_cal_meal FROM arbys_menu
+              SELECT restaurant, menu_item, calories, total_carbohydrate, carb_cal_meal, protein, total_fat FROM arbys_menu
               UNION ALL
-              SELECT restaurant, menu_item, calories, total_carbohydrate, carb_cal_meal FROM burgerking_menu
+              SELECT restaurant, menu_item, calories, total_carbohydrate, carb_cal_meal, protein, total_fat FROM burgerking_menu
               UNION ALL
-              SELECT restaurant, menu_item, calories, total_carbohydrate, carb_cal_meal FROM carlsjr_menu
+              SELECT restaurant, menu_item, calories, total_carbohydrate, carb_cal_meal, protein, total_fat FROM carlsjr_menu
               UNION ALL
-              SELECT restaurant, menu_item, calories, total_carbohydrate, carb_cal_meal FROM chickfila_menu
+              SELECT restaurant, menu_item, calories, total_carbohydrate, carb_cal_meal, protein, total_fat FROM chickfila_menu
               UNION ALL
-              SELECT restaurant, menu_item, calories, total_carbohydrate, carb_cal_meal FROM jackinthebox_menu
+              SELECT restaurant, menu_item, calories, total_carbohydrate, carb_cal_meal, protein, total_fat FROM jackinthebox_menu
               UNION ALL
-              SELECT restaurant, menu_item, calories, total_carbohydrate, carb_cal_meal FROM subway_menu
+              SELECT restaurant, menu_item, calories, total_carbohydrate, carb_cal_meal, protein, total_fat FROM subway_menu
               UNION ALL
-              SELECT restaurant, menu_item, calories, total_carbohydrate, carb_cal_meal FROM tacobell1_menu
+              SELECT restaurant, menu_item, calories, total_carbohydrate, carb_cal_meal, protein, total_fat FROM tacobell1_menu
             ) AS all_menus
                 WHERE carb_cal_meal BETWEEN $1 - 0.02 AND $1 + 0.02
                 ${restaurantFilter}             `,
@@ -309,7 +315,7 @@ app.post('/specific/carbMeal', async (req, res) => {
 
         const restaurants = {};
         result.rows.forEach(row => {
-            const { restaurant, menu_item, calories, total_carbohydrate, carb_cal_meal } = row;
+            const { restaurant, menu_item, calories, total_carbohydrate, carb_cal_meal, protein, total_fat } = row;
             if (!restaurants[restaurant]) {
                 restaurants[restaurant] = [];
             }
@@ -317,7 +323,9 @@ app.post('/specific/carbMeal', async (req, res) => {
                 menuItem: menu_item,
                 calories: calories,
                 totalCarb: total_carbohydrate,
-                carbMealPercentage: carb_cal_meal * 100
+                carbMealPercentage: carb_cal_meal * 100,
+                proteinGrams: protein,
+                totalFat: total_fat
             });
         });
 
@@ -351,21 +359,21 @@ app.post('/average/carbDay', async (req, res) => {
 
 
         const query = {
-            text: `SELECT restaurant, menu_item, calories, carb_day
+            text: `SELECT restaurant, menu_item, calories, carb_day, protein, total_fat
             FROM (
-              SELECT restaurant, menu_item, calories, total_carbohydrate, carb_day FROM arbys_menu
+              SELECT restaurant, menu_item, calories, total_carbohydrate, carb_day, protein, total_fat FROM arbys_menu
               UNION ALL
-              SELECT restaurant, menu_item, calories, total_carbohydrate, carb_day FROM burgerking_menu
+              SELECT restaurant, menu_item, calories, total_carbohydrate, carb_day, protein, total_fat FROM burgerking_menu
               UNION ALL
-              SELECT restaurant, menu_item, calories, total_carbohydrate, carb_day FROM carlsjr_menu
+              SELECT restaurant, menu_item, calories, total_carbohydrate, carb_day, protein, total_fat FROM carlsjr_menu
               UNION ALL
-              SELECT restaurant, menu_item, calories, total_carbohydrate, carb_day FROM chickfila_menu
+              SELECT restaurant, menu_item, calories, total_carbohydrate, carb_day, protein, total_fat FROM chickfila_menu
               UNION ALL
-              SELECT restaurant, menu_item, calories, total_carbohydrate, carb_day FROM jackinthebox_menu
+              SELECT restaurant, menu_item, calories, total_carbohydrate, carb_day, protein, total_fat FROM jackinthebox_menu
               UNION ALL
-              SELECT restaurant, menu_item, calories, total_carbohydrate, carb_day FROM subway_menu
+              SELECT restaurant, menu_item, calories, total_carbohydrate, carb_day, protein, total_fat FROM subway_menu
               UNION ALL
-              SELECT restaurant, menu_item, calories, total_carbohydrate, carb_day FROM tacobell1_menu
+              SELECT restaurant, menu_item, calories, total_carbohydrate, carb_day, protein, total_fat FROM tacobell1_menu
             ) AS all_menus
                 WHERE carb_day BETWEEN $1 - 0.01 AND $1 + 0.01 
                 ${restaurantFilter}           `,
@@ -378,7 +386,7 @@ app.post('/average/carbDay', async (req, res) => {
        
         const restaurants = {};
         result.rows.forEach(row => {
-            const { restaurant, menu_item, calories, total_carbohydrate, carb_day } = row;
+            const { restaurant, menu_item, calories, total_carbohydrate, carb_day, protein, total_fat } = row;
             if (!restaurants[restaurant]) {
                 restaurants[restaurant] = [];
             }
@@ -386,7 +394,9 @@ app.post('/average/carbDay', async (req, res) => {
                 menuItem: menu_item,
                 calories: calories, 
                 totalCarb: total_carbohydrate,
-                carbDayPercentage: carb_day * 100
+                carbDayPercentage: carb_day * 100,
+                proteinGrams: protein,
+                totalFat: total_fat
             });
         });
 
@@ -427,21 +437,21 @@ app.post('/customized/carbDay', async (req, res) => {
         const maxCarb = Math.ceil(carbCalories / 4 + (0.01 * caloriesDay / 4));
 
         const query = {
-            text: `SELECT restaurant, menu_item, calories, total_carbohydrate
+            text: `SELECT restaurant, menu_item, calories, total_carbohydrate, protein, total_fat
             FROM (
-              SELECT restaurant, menu_item, calories, total_carbohydrate FROM arbys_menu
+              SELECT restaurant, menu_item, calories, total_carbohydrate, protein, total_fat FROM arbys_menu
               UNION ALL
-              SELECT restaurant, menu_item, calories, total_carbohydrate FROM burgerking_menu
+              SELECT restaurant, menu_item, calories, total_carbohydrate, protein, total_fat FROM burgerking_menu
               UNION ALL
-              SELECT restaurant, menu_item, calories, total_carbohydrate FROM carlsjr_menu
+              SELECT restaurant, menu_item, calories, total_carbohydrate, protein, total_fat FROM carlsjr_menu
               UNION ALL
-              SELECT restaurant, menu_item, calories, total_carbohydrate FROM chickfila_menu
+              SELECT restaurant, menu_item, calories, total_carbohydrate, protein, total_fat FROM chickfila_menu
               UNION ALL
-              SELECT restaurant, menu_item, calories, total_carbohydrate FROM jackinthebox_menu
+              SELECT restaurant, menu_item, calories, total_carbohydrate, protein, total_fat FROM jackinthebox_menu
               UNION ALL
-              SELECT restaurant, menu_item, calories, total_carbohydrate FROM subway_menu
+              SELECT restaurant, menu_item, calories, total_carbohydrate, protein, total_fat FROM subway_menu
               UNION ALL
-              SELECT restaurant, menu_item, calories, total_carbohydrate FROM tacobell1_menu
+              SELECT restaurant, menu_item, calories, total_carbohydrate, protein, total_fat FROM tacobell1_menu
             ) AS all_menus
                  WHERE total_carbohydrate BETWEEN $1 AND $2
                  ${restaurantFilter}       `,
@@ -454,7 +464,7 @@ app.post('/customized/carbDay', async (req, res) => {
        
         const restaurants = {};
         result.rows.forEach(row => {
-            const { restaurant, menu_item, calories, total_carbohydrate } = row;
+            const { restaurant, menu_item, calories, total_carbohydrate, protein, total_fat } = row;
             if (!restaurants[restaurant]) {
                 restaurants[restaurant] = [];
             }
@@ -462,7 +472,9 @@ app.post('/customized/carbDay', async (req, res) => {
                 menuItem: menu_item,
                 calories: calories,
                 carbGrams: total_carbohydrate,
-                carbDailyPercentage: parseFloat(((total_carbohydrate * 4 / caloriesDay) * 100).toFixed(2))
+                carbDailyPercentage: parseFloat(((total_carbohydrate * 4 / caloriesDay) * 100).toFixed(2)),
+                proteinGrams: protein,
+                totalFat: total_fat
             });
         });
 
@@ -497,21 +509,21 @@ app.post('/specific/proteinlvl', async (req, res) => {
         console.log("values", values)
 
         const query = {
-            text: `SELECT restaurant, menu_item, calories, protein
+            text: `SELECT restaurant, menu_item, calories, protein, total_carbohydrates, total_fat
              FROM (
-                    SELECT restaurant, menu_item, calories, protein FROM arbys_menu
+                    SELECT restaurant, menu_item, calories, protein, total_carbohydrates, total_fat FROM arbys_menu
                     UNION ALL
-                    SELECT restaurant, menu_item, calories, protein FROM burgerking_menu
+                    SELECT restaurant, menu_item, calories, protein, total_carbohydrates, total_fat FROM burgerking_menu
                     UNION ALL
-                    SELECT restaurant, menu_item, calories, protein FROM carlsjr_menu
+                    SELECT restaurant, menu_item, calories, protein, total_carbohydrates, total_fat FROM carlsjr_menu
                     UNION ALL
-                    SELECT restaurant, menu_item, calories, protein FROM chickfila_menu
+                    SELECT restaurant, menu_item, calories, protein, total_carbohydrates, total_fat FROM chickfila_menu
                     UNION ALL
-                    SELECT restaurant, menu_item, calories, protein FROM jackinthebox_menu
+                    SELECT restaurant, menu_item, calories, protein, total_carbohydrates, total_fat FROM jackinthebox_menu
                     UNION ALL
-                    SELECT restaurant, menu_item, calories, protein FROM subway_menu
+                    SELECT restaurant, menu_item, calories, protein, total_carbohydrates, total_fat FROM subway_menu
                     UNION ALL
-                    SELECT restaurant, menu_item, calories, protein FROM tacobell1_menu
+                    SELECT restaurant, menu_item, calories, protein, total_carbohydrates, total_fat FROM tacobell1_menu
                   ) AS all_menus
                 WHERE protein BETWEEN $1 - 2 AND $1 + 2
                 ${restaurantFilter}`, // Added the dynamic restaurant filter
@@ -522,14 +534,16 @@ app.post('/specific/proteinlvl', async (req, res) => {
 
         const restaurantsData = {};
         result.rows.forEach(row => {
-            const { restaurant, menu_item, calories, protein } = row;
+            const { restaurant, menu_item, calories, protein, total_carbohydrates, total_fat } = row;
             if (!restaurantsData[restaurant]) {
                 restaurantsData[restaurant] = [];
             }
             restaurantsData[restaurant].push({
                 menuItem: menu_item,
                 calories: calories,
-                protein: protein
+                protein: protein,
+                totalCarbs: total_carbohydrates,
+                totalFat: total_fat
             });
         });
 
@@ -564,21 +578,21 @@ app.post('/calorieRange', async (req, res) => {
 
         if (proteinlvl === undefined) {
         const query = {
-            text: `SELECT restaurant, menu_item, calories, protein
+            text: `SELECT restaurant, menu_item, calories, protein, total_carbohydrates, total_fat
              FROM (
-                    SELECT restaurant, menu_item, calories, protein FROM arbys_menu
+                    SELECT restaurant, menu_item, calories, protein, total_carbohydrates, total_fat FROM arbys_menu
                     UNION ALL
-                    SELECT restaurant, menu_item, calories, protein FROM burgerking_menu
+                    SELECT restaurant, menu_item, calories, protein, total_carbohydrates, total_fat FROM burgerking_menu
                     UNION ALL
-                    SELECT restaurant, menu_item, calories, protein FROM carlsjr_menu
+                    SELECT restaurant, menu_item, calories, protein, total_carbohydrates, total_fat FROM carlsjr_menu
                     UNION ALL
-                    SELECT restaurant, menu_item, calories, protein FROM chickfila_menu
+                    SELECT restaurant, menu_item, calories, protein, total_carbohydrates, total_fat FROM chickfila_menu
                     UNION ALL
-                    SELECT restaurant, menu_item, calories, protein FROM jackinthebox_menu
+                    SELECT restaurant, menu_item, calories, protein, total_carbohydrates, total_fat FROM jackinthebox_menu
                     UNION ALL
-                    SELECT restaurant, menu_item, calories, protein FROM subway_menu
+                    SELECT restaurant, menu_item, calories, protein, total_carbohydrates, total_fat FROM subway_menu
                     UNION ALL
-                    SELECT restaurant, menu_item, calories, protein FROM tacobell1_menu
+                    SELECT restaurant, menu_item, calories, protein, total_carbohydrates, total_fat FROM tacobell1_menu
                   ) AS all_menus
                 WHERE calories BETWEEN $1 AND $2 
                     ${restaurantFilter}                  `,
@@ -589,14 +603,16 @@ app.post('/calorieRange', async (req, res) => {
         
         const restaurants = {};
         result.rows.forEach(row => {
-            const { restaurant, menu_item, calories, protein } = row;
+            const { restaurant, menu_item, calories, protein, total_carbohydrates, total_fat } = row;
             if (!restaurants[restaurant]) {
                 restaurants[restaurant] = [];
             }
             restaurants[restaurant].push({
                 menuItem: menu_item,
                 calories: calories,
-                protein: protein
+                protein: protein,
+                totalCarbs: total_carbohydrates,
+                total_fat: total_fat
             });
         });
 
@@ -605,21 +621,21 @@ app.post('/calorieRange', async (req, res) => {
     
     } else {
         const query = {
-            text: `SELECT restaurant, menu_item, calories, protein
+            text: `SELECT restaurant, menu_item, calories, protein, total_carbohydrates, total_fat
              FROM (
-                    SELECT restaurant, menu_item, calories, protein FROM arbys_menu
+                    SELECT restaurant, menu_item, calories, protein, total_carbohydrates, total_fat FROM arbys_menu
                     UNION ALL
-                    SELECT restaurant, menu_item, calories, protein FROM burgerking_menu
+                    SELECT restaurant, menu_item, calories, protein, total_carbohydrates, total_fat FROM burgerking_menu
                     UNION ALL
-                    SELECT restaurant, menu_item, calories, protein FROM carlsjr_menu
+                    SELECT restaurant, menu_item, calories, protein, total_carbohydrates, total_fat FROM carlsjr_menu
                     UNION ALL
-                    SELECT restaurant, menu_item, calories, protein FROM chickfila_menu
+                    SELECT restaurant, menu_item, calories, protein, total_carbohydrates, total_fat FROM chickfila_menu
                     UNION ALL
-                    SELECT restaurant, menu_item, calories, protein FROM jackinthebox_menu
+                    SELECT restaurant, menu_item, calories, protein, total_carbohydrates, total_fat FROM jackinthebox_menu
                     UNION ALL
-                    SELECT restaurant, menu_item, calories, protein FROM subway_menu
+                    SELECT restaurant, menu_item, calories, protein, total_carbohydrates, total_fat FROM subway_menu
                     UNION ALL
-                    SELECT restaurant, menu_item, calories, protein FROM tacobell1_menu
+                    SELECT restaurant, menu_item, calories, protein, total_carbohydrates, total_fat FROM tacobell1_menu
                   ) AS all_menus
                 WHERE calories BETWEEN $1 AND $2 
                     ${restaurantFilter} 
@@ -633,23 +649,23 @@ app.post('/calorieRange', async (req, res) => {
         
         const restaurants = {};
         result.rows.forEach(row => {
-            const { restaurant, menu_item, calories, protein } = row;
+            const { restaurant, menu_item, calories, protein, total_carbohydrates, total_fat } = row;
             if (!restaurants[restaurant]) {
                 restaurants[restaurant] = [];
             }
             restaurants[restaurant].push({
                 menuItem: menu_item,
                 calories: calories,
-                protein: protein
+                protein: protein,
+                totalCarbs: total_carbohydrates,
+                totalFat: total_fat
             });
         });
 
         res.json({ restaurants });
     }
 
-        
-
-        
+              
     } catch (error) {
         console.error('Error executing query', error);
         res.status(500).json({ error: 'Internal server error' });
