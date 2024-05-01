@@ -56,23 +56,20 @@ app.get('/', (req, res) => {
 // recommended for clients percentage not be over 35% since most meals do not go past that and will retrieve few results
 // has a restaurant filter, recommended more than three to bring in results
 app.post('/specific/proteinMeal', async (req, res) => {
-    const {protein, restaurants: restaurantList } = req.body;
+    const {proteinPercentage, restaurants: restaurantList } = req.body;
 
-    console.log("protein", protein)
-    console.log("restaurants", restaurantList);
+
 
 
     try {
         let restaurantFilter = '';
-        let values = [protein];
+        let values = [proteinPercentage];
         if (restaurantList) {
             const selectedRestaurants = Array.isArray(restaurantList) ? restaurantList : [restaurantList];
             restaurantFilter = `AND restaurant = ANY($2)`;
             values.push(selectedRestaurants);
         }
 
-        console.log("filter", restaurantFilter)
-        console.log("values", values)
 
         const query = {
             text: `SELECT restaurant, menu_item, calories, protein, protein_cal_meal, total_carbohydrates, total_fat
@@ -131,13 +128,13 @@ app.post('/specific/proteinMeal', async (req, res) => {
 // typically around 10% as the maxmimum, has a +-0.05 range
 // based on the average 2000 calories a day
 app.post('/average/proteinDay', async (req, res) => {
-    const {protein, restaurants: restaurantList} = req.body;
+    const {proteinPercentage, restaurants: restaurantList} = req.body;
 
-    console.log("protein", protein)
+
 
     try {
         let restaurantFilter = '';
-        let values = [protein];
+        let values = [proteinPercentage];
         if (restaurantList) {
             const selectedRestaurants = Array.isArray(restaurantList) ? restaurantList : [restaurantList];
             restaurantFilter = `AND restaurant = ANY($2)`;
@@ -200,9 +197,9 @@ app.post('/average/proteinDay', async (req, res) => {
 // typically around 10% as the maxmimum, has a +-0.05 range
 // based on the users entered calories a day
 app.post('/customized/proteinDay', async (req, res) => {
-    const {proteinPercent, caloriesDay, restaurants: restaurantList} = req.body;
+    const {proteinPercentage, caloriesDay, restaurants: restaurantList} = req.body;
 
-    console.log("proteinPercent", proteinPercent)
+    console.log("proteinPercent", proteinPercentage)
     console.log("caloriesDay", caloriesDay)
 
     try {
@@ -215,7 +212,7 @@ app.post('/customized/proteinDay', async (req, res) => {
         }
 
 
-        const proteinCalories = proteinPercent * caloriesDay;
+        const proteinCalories = proteinPercentage * caloriesDay;
         const minProtein = Math.floor(proteinCalories / 4 - (0.01 * caloriesDay / 4));
         const maxProtein = Math.ceil(proteinCalories / 4 + (0.01 * caloriesDay / 4));
 
@@ -275,13 +272,13 @@ app.post('/customized/proteinDay', async (req, res) => {
 // retrieve meals that fit a +- 0.02 of the desired carb to calorie ratio per meal
 // typically a higher percentage +30% 
 app.post('/specific/carbMeal', async (req, res) => {
-    const {carb, restaurants: restaurantList} = req.body;
+    const {carbPercentage, restaurants: restaurantList} = req.body;
 
-    console.log("carb", carb)
+    console.log("carb", carbPercentage)
 
     try {
         let restaurantFilter = '';
-        let values = [carb];
+        let values = [carbPercentage];
         if (restaurantList) {
             const selectedRestaurants = Array.isArray(restaurantList) ? restaurantList : [restaurantList];
             restaurantFilter = `AND restaurant = ANY($2)`;
@@ -344,13 +341,13 @@ app.post('/specific/carbMeal', async (req, res) => {
 // typically around 15% as the maxmimum, has a +-0.01 range
 // based on the average 2000 calorie 
 app.post('/average/carbDay', async (req, res) => {
-    const {carb, restaurants: restaurantList} = req.body;
+    const {carbPercentage, restaurants: restaurantList} = req.body;
 
-    console.log("carb", carb)
+    console.log("carb", carbPercentage)
 
     try {
         let restaurantFilter = '';
-        let values = [carb];
+        let values = [carbPercentage];
         if (restaurantList) {
             const selectedRestaurants = Array.isArray(restaurantList) ? restaurantList : [restaurantList];
             restaurantFilter = `AND restaurant = ANY($2)`;
@@ -418,9 +415,9 @@ app.post('/average/carbDay', async (req, res) => {
 // typically around 15% as the maxmimum, has a +-0.01 range
 // custimized based on the user's entered calories for the day
 app.post('/customized/carbDay', async (req, res) => {
-    const {carbPercent, caloriesDay, restaurants: restaurantList} = req.body;
+    const {carbPercentage, caloriesDay, restaurants: restaurantList} = req.body;
 
-    console.log("carbPercent", carbPercent)
+    console.log("carbPercent", carbPercentage)
     console.log("caloriesDay", caloriesDay)
 
     try {
@@ -432,7 +429,7 @@ app.post('/customized/carbDay', async (req, res) => {
             values.push(selectedRestaurants);
         }
 
-        const carbCalories = carbPercent * caloriesDay;
+        const carbCalories = carbPercentage * caloriesDay;
         const minCarb = Math.floor(carbCalories / 4 - (0.01 * caloriesDay / 4));
         const maxCarb = Math.ceil(carbCalories / 4 + (0.01 * caloriesDay / 4));
 
@@ -491,14 +488,14 @@ app.post('/customized/carbDay', async (req, res) => {
 // retrieves protein within +-2 of the desired protein levels
 // returns the menu item, restuarant, calories, and protein of each item
 app.post('/specific/proteinlvl', async (req, res) => {
-    const { proteinlvl, restaurants: restaurantList } = req.body; // 'restaurants' should be an array
+    const { proteinGrams, restaurants: restaurantList } = req.body; 
 
-    console.log("protein", proteinlvl);
+    console.log("protein", proteinGrams);
     console.log("restaurants", restaurantList);
 
     try {
         let restaurantFilter = '';
-        let values = [proteinlvl];
+        let values = [proteinGrams];
         if (restaurantList) {
             const selectedRestaurants = Array.isArray(restaurantList) ? restaurantList : [restaurantList];
             restaurantFilter = `AND restaurant = ANY($2)`;
@@ -526,8 +523,8 @@ app.post('/specific/proteinlvl', async (req, res) => {
                     SELECT restaurant, menu_item, calories, protein, total_carbohydrates, total_fat FROM tacobell1_menu
                   ) AS all_menus
                 WHERE protein BETWEEN $1 - 2 AND $1 + 2
-                ${restaurantFilter}`, // Added the dynamic restaurant filter
-            values: values // Pass the selected restaurants as values
+                ${restaurantFilter}`,
+            values: values 
         };
 
         const result = await client.query(query);
@@ -561,11 +558,11 @@ app.post('/specific/proteinlvl', async (req, res) => {
 // can add an extra protein filter that retrieves food within the calorie range and minimum protein level
 // can add a total fat filter that retrives food under the max total fat within the calorie range
 app.post('/calorieRange', async (req, res) => {
-    const {lowerRange, upperRange, proteinlvl, restaurants: restaurantList} = req.body;
+    const {lowerRange, upperRange, proteinGrams, restaurants: restaurantList} = req.body;
 
     console.log("lowerRange", lowerRange)
     console.log("upperRange", upperRange)
-    console.log("proteinlvl", proteinlvl)
+    console.log("proteinlvl", proteinGrams)
 
     try {
         let restaurantFilter = '';
@@ -576,7 +573,7 @@ app.post('/calorieRange', async (req, res) => {
             values.push(selectedRestaurants);
         }
 
-        if (proteinlvl === undefined) {
+        if (proteinGrams === undefined) {
         const query = {
             text: `SELECT restaurant, menu_item, calories, protein, total_carbohydrates, total_fat
              FROM (
