@@ -217,21 +217,21 @@ app.post('/customized/proteinDay', async (req, res) => {
         const maxProtein = Math.ceil(proteinCalories / 4 + (0.01 * caloriesDay / 4));
 
         const query = {
-            text: `SELECT restaurant, menu_item, calories, protein, total_carbohydrates, total_fat
+            text: `SELECT restaurant, menu_item, calories, protein, total_carbohydrate, total_fat
             FROM (
-              SELECT restaurant, menu_item, calories, protein, total_carbohydrates, total_fat FROM arbys_menu
+              SELECT restaurant, menu_item, calories, protein, total_carbohydrate, total_fat FROM arbys_menu
               UNION ALL
-              SELECT restaurant, menu_item, calories, protein, total_carbohydrates, total_fat FROM burgerking_menu
+              SELECT restaurant, menu_item, calories, protein, total_carbohydrate, total_fat FROM burgerking_menu
               UNION ALL
-              SELECT restaurant, menu_item, calories, protein, total_carbohydrates, total_fat FROM carlsjr_menu
+              SELECT restaurant, menu_item, calories, protein, total_carbohydrate, total_fat FROM carlsjr_menu
               UNION ALL
-              SELECT restaurant, menu_item, calories, protein, total_carbohydrates, total_fat FROM chickfila_menu
+              SELECT restaurant, menu_item, calories, protein, total_carbohydrate, total_fat FROM chickfila_menu
               UNION ALL
-              SELECT restaurant, menu_item, calories, protein, total_carbohydrates, total_fat FROM jackinthebox_menu
+              SELECT restaurant, menu_item, calories, protein, total_carbohydrate, total_fat FROM jackinthebox_menu
               UNION ALL
-              SELECT restaurant, menu_item, calories, protein, total_carbohydrates, total_fat FROM subway_menu
+              SELECT restaurant, menu_item, calories, protein, total_carbohydrate, total_fat FROM subway_menu
               UNION ALL
-              SELECT restaurant, menu_item, calories, protein, total_carbohydrates, total_fat FROM tacobell1_menu
+              SELECT restaurant, menu_item, calories, protein, total_carbohydrate, total_fat FROM tacobell1_menu
             ) AS all_menus
                  WHERE protein BETWEEN $1 AND $2
                  ${restaurantFilter}       `,
@@ -244,7 +244,7 @@ app.post('/customized/proteinDay', async (req, res) => {
        
         const restaurants = {};
         result.rows.forEach(row => {
-            const { restaurant, menu_item, calories, protein, total_carbohydrates, total_fat } = row;
+            const { restaurant, menu_item, calories, protein, total_carbohydrate, total_fat } = row;
             if (!restaurants[restaurant]) {
                 restaurants[restaurant] = [];
             }
@@ -253,7 +253,7 @@ app.post('/customized/proteinDay', async (req, res) => {
                 calories: calories,
                 proteinGrams: protein,
                 proteinDailyPercentage: parseFloat(((protein * 4 / caloriesDay) * 100).toFixed(2)),
-                totalCarbs: total_carbohydrates,
+                totalCarbs: total_carbohydrate,
                 totalFat: total_fat
             });
         });
