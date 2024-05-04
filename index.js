@@ -107,7 +107,7 @@ app.post('/specific/proteinMeal', async (req, res) => {
                 menuItem: menu_item,
                 calories: calories,
                 proteinGrams: protein,
-                proteinMealPercentage: protein_cal_meal * 100,
+                proteinMealPercentage: parseFloat((protein_cal_meal * 100).toFixed(2)),
                 totalCarbs: total_carbohydrate,
                 totalFat: total_fat
             });
