@@ -213,8 +213,8 @@ app.post('/customized/proteinDay', async (req, res) => {
 
 
         const proteinCalories = proteinPercentage * caloriesDay;
-        const minProtein = Math.floor(proteinCalories / 4 - (0.01 * caloriesDay / 4));
-        const maxProtein = Math.ceil(proteinCalories / 4 + (0.01 * caloriesDay / 4));
+        const minProtein = Math.floor(proteinCalories / 4 - (0.005 * caloriesDay / 4));
+        const maxProtein = Math.ceil(proteinCalories / 4 + (0.005 * caloriesDay / 4));
 
         const query = {
             text: `SELECT restaurant, menu_item, calories, protein, total_carbohydrate, total_fat
