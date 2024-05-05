@@ -356,7 +356,7 @@ app.post('/average/carbDay', async (req, res) => {
 
 
         const query = {
-            text: `SELECT restaurant, menu_item, calories, carb_day, protein, total_fat
+            text: `SELECT restaurant, menu_item, calories, total_carbohydrate, carb_day, protein, total_fat
             FROM (
               SELECT restaurant, menu_item, calories, total_carbohydrate, carb_day, protein, total_fat FROM arbys_menu
               UNION ALL
@@ -411,8 +411,7 @@ app.post('/average/carbDay', async (req, res) => {
 
 // retrieves meals that fit within desired daily carb percentage 
 // to see how much a meal will contribute to your daily percentage of carbohydrates intake
-
-// typically around 15% as the maxmimum, has a +-0.01 range
+// typically around 15% as the maxmimum, within a +-0.01 range
 // custimized based on the user's entered calories for the day
 app.post('/customized/carbDay', async (req, res) => {
     const {carbPercentage, caloriesDay, restaurants: restaurantList} = req.body;
@@ -468,7 +467,7 @@ app.post('/customized/carbDay', async (req, res) => {
             restaurants[restaurant].push({
                 menuItem: menu_item,
                 calories: calories,
-                carbGrams: total_carbohydrate,
+                totalCarbs: total_carbohydrate,
                 carbDailyPercentage: parseFloat(((total_carbohydrate * 4 / caloriesDay) * 100).toFixed(2)),
                 proteinGrams: protein,
                 totalFat: total_fat
@@ -482,6 +481,161 @@ app.post('/customized/carbDay', async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 })
+
+
+
+
+// Total Fat calculator
+// retrieves meals that fit within desired daily total percentage 
+// to see how much a meal will contribute to your daily percentage of total fat intake
+// recommended 20-30% of calories are from total fat
+// typically around 30% as the maxmimum, within a +/-1% range
+// based on the average 2000 calorie diet
+app.post('/average/totalFatDay', async (req, res) => {
+    const {totalFatPercentage, restaurants: restaurantList} = req.body;
+
+    console.log("totalFat", totalFatPercentage)
+
+    try {
+        let restaurantFilter = '';
+        let values = [];
+        if (restaurantList) {
+            const selectedRestaurants = Array.isArray(restaurantList) ? restaurantList : [restaurantList];
+            restaurantFilter = `AND restaurant = ANY($3)`;
+            values.push(selectedRestaurants);
+        }
+
+        const totalFatCalories = totalFatPercentage * 2000;
+        const minTotalFat = Math.floor(totalFatCalories / 9 - (0.005 * 2000 / 9));
+        const maxTotalFat = Math.ceil(totalFatCalories / 9 + (0.005 * 2000 / 9));
+
+        const query = {
+            text: `SELECT restaurant, menu_item, calories, total_fat, total_carbohydrate, protein
+            FROM (
+              SELECT restaurant, menu_item, calories, total_fat, total_carbohydrate, protein FROM arbys_menu
+              UNION ALL
+              SELECT restaurant, menu_item, calories, total_fat, total_carbohydrate, protein FROM burgerking_menu
+              UNION ALL
+              SELECT restaurant, menu_item, calories, total_fat, total_carbohydrate, protein FROM carlsjr_menu
+              UNION ALL
+              SELECT restaurant, menu_item, calories, total_fat, total_carbohydrate, protein FROM chickfila_menu
+              UNION ALL
+              SELECT restaurant, menu_item, calories, total_fat, total_carbohydrate, protein FROM jackinthebox_menu
+              UNION ALL
+              SELECT restaurant, menu_item, calories, total_fat, total_carbohydrate, protein FROM subway_menu
+              UNION ALL
+              SELECT restaurant, menu_item, calories, total_fat, total_carbohydrate, protein FROM tacobell1_menu
+            ) AS all_menus
+                WHERE total_fat BETWEEN $1 AND $2 
+                ${restaurantFilter}           `,
+            values: [minTotalFat, maxTotalFat, ...values]
+        };
+        
+
+        const result = await client.query(query);
+
+       
+        const restaurants = {};
+        result.rows.forEach(row => {
+            const { restaurant, menu_item, calories, total_fat, total_carbohydrate, protein} = row;
+            if (!restaurants[restaurant]) {
+                restaurants[restaurant] = [];
+            }
+            restaurants[restaurant].push({
+                menuItem: menu_item,
+                calories: calories, 
+                totalFat: total_fat,
+                totalFatPercentage: parseFloat(((total_fat * 9 / 2000) * 100).toFixed(2)),
+                totalCarb: total_carbohydrate,
+                proteinGrams: protein,
+            });
+        });
+
+        res.json({ restaurants });
+    
+    } catch (error) {
+        console.error('Error executing query', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+})
+
+
+
+
+
+// retrieves meals that fit within desired daily total percentage 
+// to see how much a meal will contribute to your daily percentage of total fat intake
+// recommended 20-30% of calories are from total fat
+// typically around 30% as the maxmimum, within a +/-1% range
+// custimized based on the user's entered calories for the day
+app.post('/customized/totalFatDay', async (req, res) => {
+    const {totalFatPercentage, caloriesDay, restaurants: restaurantList} = req.body;
+
+    console.log("totalFat", totalFatPercentage)
+
+    try {
+        let restaurantFilter = '';
+        let values = [];
+        if (restaurantList) {
+            const selectedRestaurants = Array.isArray(restaurantList) ? restaurantList : [restaurantList];
+            restaurantFilter = `AND restaurant = ANY($3)`;
+            values.push(selectedRestaurants);
+        }
+
+        const totalFatCalories = totalFatPercentage * caloriesDay;
+        const minTotalFat = Math.floor(totalFatCalories / 9 - (0.003 * caloriesDay / 9));
+        const maxTotalFat = Math.ceil(totalFatCalories / 9 + (0.003 * caloriesDay / 9));
+
+        const query = {
+            text: `SELECT restaurant, menu_item, calories, total_fat, total_carbohydrate, protein
+            FROM (
+              SELECT restaurant, menu_item, calories, total_fat, total_carbohydrate, protein FROM arbys_menu
+              UNION ALL
+              SELECT restaurant, menu_item, calories, total_fat, total_carbohydrate, protein FROM burgerking_menu
+              UNION ALL
+              SELECT restaurant, menu_item, calories, total_fat, total_carbohydrate, protein FROM carlsjr_menu
+              UNION ALL
+              SELECT restaurant, menu_item, calories, total_fat, total_carbohydrate, protein FROM chickfila_menu
+              UNION ALL
+              SELECT restaurant, menu_item, calories, total_fat, total_carbohydrate, protein FROM jackinthebox_menu
+              UNION ALL
+              SELECT restaurant, menu_item, calories, total_fat, total_carbohydrate, protein FROM subway_menu
+              UNION ALL
+              SELECT restaurant, menu_item, calories, total_fat, total_carbohydrate, protein FROM tacobell1_menu
+            ) AS all_menus
+                WHERE total_fat BETWEEN $1 AND $2  
+                ${restaurantFilter}           `,
+            values: [minTotalFat, maxTotalFat, ...values]
+        };
+        
+
+        const result = await client.query(query);
+
+       
+        const restaurants = {};
+        result.rows.forEach(row => {
+            const { restaurant, menu_item, calories, total_fat, total_carbohydrate, protein} = row;
+            if (!restaurants[restaurant]) {
+                restaurants[restaurant] = [];
+            }
+            restaurants[restaurant].push({
+                menuItem: menu_item,
+                calories: calories, 
+                totalFat: total_fat,
+                totalFatPercentage: parseFloat(((total_fat * 9 /caloriesDay) * 100).toFixed(2)),
+                totalCarb: total_carbohydrate,
+                proteinGrams: protein,
+            });
+        });
+
+        res.json({ restaurants });
+    
+    } catch (error) {
+        console.error('Error executing query', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+})
+
 
 
 
