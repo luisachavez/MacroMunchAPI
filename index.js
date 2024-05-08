@@ -793,7 +793,7 @@ app.post('/calorieRange', async (req, res) => {
                     AND protein >= $4
                   
                  `,
-            values: [...values, proteinlvl]
+            values: [...values, proteinGrams]
         };
         const result = await client.query(query);
 
