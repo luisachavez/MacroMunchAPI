@@ -21,29 +21,6 @@ const client = new Client({
 });
 
 
-// const client = new pg.Client({
-//     user: process.env.user,
-//     host: process.env.host,
-//     database: process.env.database,
-//     password: process.env.password,
-//     port: process.env.pgPort
-//   })
-// const client = new pg.Client({
-//     user: "postgres",
-//     host: "lc-fastfood-nutrition.ctkkwmoeorg3.us-west-2.rds.amazonaws.com",
-//     database: "fastfoodNutrition",
-//     password: "Believe112",
-//     port: 5432,
-//     ssl: {
-//         rejectUnauthorized: false // For development only, set to true in production
-//     }
-// })
-
-
-
-
-
-
 client.connect();
 
 
@@ -57,9 +34,6 @@ app.get('/', (req, res) => {
 // has a restaurant filter, recommended more than three to bring in results
 app.post('/specific/proteinMeal', async (req, res) => {
     const {proteinPercentage, restaurants: restaurantList } = req.body;
-
-
-
 
     try {
         let restaurantFilter = '';
@@ -129,8 +103,6 @@ app.post('/specific/proteinMeal', async (req, res) => {
 // based on the average 2000 calories a day
 app.post('/average/proteinDay', async (req, res) => {
     const {proteinPercentage, restaurants: restaurantList} = req.body;
-
-
 
     try {
         let restaurantFilter = '';
@@ -483,8 +455,6 @@ app.post('/customized/carbDay', async (req, res) => {
 })
 
 
-
-
 // Total Fat calculator
 // retrieves meals that fit within desired daily total percentage 
 // to see how much a meal will contribute to your daily percentage of total fat intake
@@ -558,8 +528,6 @@ app.post('/average/totalFatDay', async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 })
-
-
 
 
 
@@ -822,12 +790,6 @@ app.post('/calorieRange', async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 })
-
-
-
-
-
-
 
 
 
